@@ -4,9 +4,39 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'  # Choose an appropriate agent image
 
+
 steps:
-- script: echo 'This is your build step.'  # Replace with actual build steps
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+    architecture: 'x64'
+
+- script: |
+    echo '##vso[task.prependpath]/usr/bin'
+  displayName: 'Add /usr/bin to PATH'
+
+- script: |
+    docker build -t my-nginx-image .
   displayName: 'Build Docker Image'
+  workingDirectory: $(Build.SourcesDirectory)
+
+- script: |
+    docker images
+  displayName: 'List Docker Images'
+
+- script: |
+    docker run -d -p 8080:80 my-nginx-image
+  displayName: 'Run Docker Container'
+
+- script: |
+    curl http://localhost:8080
+  displayName: 'Test the Container'
+
+- script: |
+    docker stop $(docker ps -q)
+  displayName: 'Stop Docker Container'
+
 
 - task: Docker@2
   inputs:
