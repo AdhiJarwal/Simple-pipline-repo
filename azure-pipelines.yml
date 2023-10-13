@@ -34,3 +34,12 @@ steps:
     # (Optional) Destroy Terraform resources
     # terraform destroy -auto-approve
   displayName: 'Terraform Destroy'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'pipe-docker'  # Use your Docker registry connection name
+    repository: 'sakshisawalikar16/terraform'  # Use your image repository name
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
+    tags: 'latest'
+  displayName: 'Build Docker Image'
