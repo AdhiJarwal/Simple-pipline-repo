@@ -4,34 +4,10 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'  # Choose an appropriate agent image
 
-variables:
-  your_container_registry_connection: 'pipe-docker'  # Replace with your container registry connection name
-  your_image_repository: 'sakshisawalikar16/terraform'  # Replace with your image repository name
-
 steps:
 - script: echo 'This is your build step.'  # Replace with actual build steps
   displayName: 'Build Docker Image'
 
-- task: Docker@2
-  inputs:
-    command: 'build'
-    dockerfile: '**/Dockerfile'  # Path to your Dockerfile
-    tags: '$(your_container_registry_connection)/$(your_image_repository):$(Build.BuildId)'
-  displayName: 'Build Docker Image'
-
-- task: Docker@2
-  inputs:
-    command: 'login'
-    containerRegistry: '$(your_container_registry_connection)'
-  displayName: 'Docker Login'
-
-- task: Docker@2
-  inputs:
-    command: 'push'
-    containerRegistry: '$(your_container_registry_connection)'
-    repository: '$(your_image_repository)'
-    tags: '$(Build.BuildId)'
-  displayName: 'Push Docker Image to Registry'
 - task: Docker@2
   inputs:
     containerRegistry: 'pipe-docker'
