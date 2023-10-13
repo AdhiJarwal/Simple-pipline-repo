@@ -1,45 +1,58 @@
 trigger:
-- main
+- main  # Adjust the branch name you want to trigger the pipeline
+
+pr:
+- '*'
 
 pr:
 - '*'
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-latest'  # Choose an appropriate VM image
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
-    addToPath: true
-    architecture: 'x64'
+variables:
+  # Define your container registry connection
+  your_container_registry_connection: 'pipe-docker'  # Replace with your actual connection name
+  your_image_repository: 'sakshisawalikar16/terraform'  # Replace with your desired image repository
 
-- script: |
-    echo "##vso[task.prependpath]/usr/local/bin"
-  displayName: 'Add /usr/local/bin to PATH'
+stages:
+- stage: BuildAndPush
+  jobs:
+  - job: BuildAndPushJob
+    steps:
+    - task: UseJavaVersion@0
+      inputs:
+        versionSpec: '11'  # Replace with your Java version requirement
 
-- script: |
-    # Initialize Terraform
-    terraform init
-    # Plan Terraform changes
-    terraform plan -out=tfplan
-  displayName: 'Terraform Init and Plan'
+    - script: |
+        # Add any additional setup and dependencies installation steps here
+        # For example, you may want to install Maven for Java projects
+        echo "Installing Maven"
+        sudo apt-get install -y maven
+      displayName: 'Install Dependencies'
 
-- script: |
-    # Apply Terraform changes
-    terraform apply -auto-approve tfplan
-  displayName: 'Terraform Apply'
+    - script: |
+        # Build your Java application or project
+        # Replace the following commands with your actual build commands
+        echo "Building Java application"
+        # Example: mvn clean install
+      displayName: 'Build Java Application'
 
-- script: |
-    # (Optional) Destroy Terraform resources
-    # terraform destroy -auto-approve
-  displayName: 'Terraform Destroy'
+    - task: Docker@2
+      inputs:
+        containerRegistry: '$(your_container_registry_connection)'
+        repository: '$(your_image_repository)'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'  # Update the path to your Dockerfile
+        buildContext: '$(Build.SourcesDirectory)'
+        tags: 'latest'  # Set the desired image tag
+      displayName: 'Build and Push Docker Image'
 
-- task: Docker@2
-  inputs:
-    containerRegistry: 'pipe-docker'  # Use your Docker registry connection name
-    repository: 'sakshisawalikar16/terraform'  # Use your image repository name
-    command: 'build'
-    Dockerfile: '**/Dockerfile'
-    tags: 'latest'
-  displayName: 'Build Docker Image'
+    - script: |
+        # Additional steps, like pushing to other registries or deploying
+        # can be added here as needed
+      displayName: 'Additional Deployment Steps'
+
+    # Add more steps as needed for your specific pipeline
+
+# Add more stages for testing, deployment, etc. as per your project requirements
