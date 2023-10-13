@@ -7,7 +7,6 @@ pool:
 steps:
 - script: echo 'This is your build step.'  # Replace with actual build steps
   displayName: 'Build Docker Image'
-
 - task: Docker@2
   inputs:
     containerRegistry: 'pipe-docker'
