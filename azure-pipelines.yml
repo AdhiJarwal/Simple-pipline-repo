@@ -1,0 +1,36 @@
+trigger:
+- main
+
+pr:
+- '*'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.x'
+    addToPath: true
+    architecture: 'x64'
+
+- script: |
+    echo "##vso[task.prependpath]/usr/local/bin"
+  displayName: 'Add /usr/local/bin to PATH'
+
+- script: |
+    # Initialize Terraform
+    terraform init
+    # Plan Terraform changes
+    terraform plan -out=tfplan
+  displayName: 'Terraform Init and Plan'
+
+- script: |
+    # Apply Terraform changes
+    terraform apply -auto-approve tfplan
+  displayName: 'Terraform Apply'
+
+- script: |
+    # (Optional) Destroy Terraform resources
+    # terraform destroy -auto-approve
+  displayName: 'Terraform Destroy'
