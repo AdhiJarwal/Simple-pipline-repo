@@ -1,52 +1,34 @@
 trigger:
-- main  # Adjust the branch name you want to trigger the pipeline
+- main  # Replace with your branch name or trigger condition
 
 pool:
-  vmImage: 'ubuntu-latest'  # Choose an appropriate VM image
+  vmImage: 'ubuntu-latest'  # Choose an appropriate agent image
 
 variables:
-  # Define your container registry connection
-  your_container_registry_connection: 'pipe-docker'  # Replace with your actual connection name
-  your_image_repository: 'sakshisawalikar16/terraform'  # Replace with your desired image repository
+  your_container_registry_connection: 'pipe-docker'  # Replace with your container registry connection name
+  your_image_repository: 'sakshisawalikar16/terraform'  # Replace with your image repository name
 
-stages:
-- stage: BuildAndPush
-  jobs:
-  - job: BuildAndPushJob
-    steps:
-    - task: UseJavaVersion@0
-      inputs:
-        versionSpec: '11'  # Replace with your Java version requirement
+steps:
+- script: echo 'This is your build step.'  # Replace with actual build steps
+  displayName: 'Build Docker Image'
 
-    - script: |
-        # Add any additional setup and dependencies installation steps here
-        # For example, you may want to install Maven for Java projects
-        echo "Installing Maven"
-        sudo apt-get install -y maven
-      displayName: 'Install Dependencies'
+- task: Docker@2
+  inputs:
+    command: 'build'
+    dockerfile: '**/Dockerfile'  # Path to your Dockerfile
+    tags: '$(your_container_registry_connection)/$(your_image_repository):$(Build.BuildId)'
+  displayName: 'Build Docker Image'
 
-    - script: |
-        # Build your Java application or project
-        # Replace the following commands with your actual build commands
-        echo "Building Java application"
-        # Example: mvn clean install
-      displayName: 'Build Java Application'
+- task: Docker@2
+  inputs:
+    command: 'login'
+    containerRegistry: '$(your_container_registry_connection)'
+  displayName: 'Docker Login'
 
-    - task: Docker@2
-      inputs:
-        containerRegistry: '$(your_container_registry_connection)'
-        repository: '$(your_image_repository)'
-        command: 'build'
-        Dockerfile: '**/Dockerfile'  # Update the path to your Dockerfile
-        buildContext: '$(Build.SourcesDirectory)'
-        tags: 'latest'  # Set the desired image tag
-      displayName: 'Build and Push Docker Image'
-
-    - script: |
-        # Additional steps, like pushing to other registries or deploying
-        # can be added here as needed
-      displayName: 'Additional Deployment Steps'
-
-    # Add more steps as needed for your specific pipeline
-
-# Add more stages for testing, deployment, etc. as per your project requirements
+- task: Docker@2
+  inputs:
+    command: 'push'
+    containerRegistry: '$(your_container_registry_connection)'
+    repository: '$(your_image_repository)'
+    tags: '$(Build.BuildId)'
+  displayName: 'Push Docker Image to Registry'
