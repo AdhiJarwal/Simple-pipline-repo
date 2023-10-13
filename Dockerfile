@@ -1,15 +1,20 @@
-# Use an official Debian Jessie Slim base image
-FROM debian:jessie-slim
+# Use an official Node.js runtime as the base image
+FROM node:14
 
-# Update package list and install necessary packages
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        cowsay \
-        screenfetch && \
-    rm -rf /var/lib/apt/lists/*
+# Set the working directory in the container
+WORKDIR /app
 
-# Set the PATH environment variable to include /usr/games
-ENV PATH "/usr/games:$PATH"
+# Copy package.json and package-lock.json to the container
+COPY package*.json ./
 
-# Define the command to run within the container (e.g., start screenfetch)
-CMD ["screenfetch"]
+# Install application dependencies
+RUN npm install
+
+# Copy the rest of the application code to the container
+COPY . .
+
+# Expose the port that the application will run on
+EXPOSE 3000
+
+# Define the command to run your Node.js application
+CMD ["node", "app.js"]
