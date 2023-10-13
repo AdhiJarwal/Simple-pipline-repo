@@ -1,12 +1,6 @@
 trigger:
 - main  # Adjust the branch name you want to trigger the pipeline
 
-pr:
-- '*'
-
-pr:
-- '*'
-
 pool:
   vmImage: 'ubuntu-latest'  # Choose an appropriate VM image
 
